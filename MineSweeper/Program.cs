@@ -548,17 +548,19 @@ namespace MineSweeper
         }
         static void leaderboard()
         {
-            if (!File.Exists("leaderboardTimes.txt"))
+            string timePath = "leaderboardTime.txt";
+            string namePath = "leaderboardName.txt";
+            if (!File.Exists(timePath))
             {
-                File.CreateText("leaderboardTimes.txt");// Create a file to write to.
+                File.CreateText(timePath).Close();// Create a file to write to.
             }
-            if (!File.Exists("leaderboardNames.txt"))
+            if (!File.Exists(namePath))
             {
-                File.CreateText("leaderboardNames.txt");// Create a file to write to.
+                File.CreateText(namePath).Close();// Create a file to write to.
             }
-            string[] times = System.IO.File.ReadAllLines(@"leaderboardTimes.txt");
-            string[] names = System.IO.File.ReadAllLines(@"leaderboardNames.txt");
-            for(int i=0; i!= times.Length; i++)
+            string[] times = System.IO.File.ReadAllLines(timePath);
+            string[] names = System.IO.File.ReadAllLines(namePath);
+            for(int i=0; i!= 5; i++)
             {
                 Console.WriteLine(names[i]+": "+times[i]);
             }
@@ -571,9 +573,9 @@ namespace MineSweeper
 
             string timePath = "leaderboardTime.txt";
             string namePath = "leaderboardName.txt";
-            string[] times = {"", "", "", "", "", "" };
+            string[] times = {"ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ" };
             string[] fileTimes;
-            string[] names = { "", "", "", "", "", "" };
+            string[] names = { "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ" };
             string[] fileNames;
             if (!File.Exists(timePath))
             {
@@ -619,8 +621,8 @@ namespace MineSweeper
                 savedNames[A] = names[A];
             }
 
-            File.WriteAllLinesAsync(timePath, savedTimes, Encoding.UTF8);
-            File.WriteAllLinesAsync(namePath, savedNames, Encoding.UTF8);
+            File.WriteAllLines(timePath, savedTimes, Encoding.UTF8);
+            File.WriteAllLines(namePath, savedNames, Encoding.UTF8);
         }
         static void prePostGame(int[] name)
         {
