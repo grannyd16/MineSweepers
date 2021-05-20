@@ -2,7 +2,9 @@
 //Started on 06/05/2021
 
 using System;
+using System.IO;
 using System.Diagnostics;
+using System.Text;
 namespace MineSweeper
 {
     class Program
@@ -159,7 +161,7 @@ namespace MineSweeper
                         Console.ForegroundColor = ConsoleColor.Red;
                         Console.Write("[*]");
                     }
-                   else if (boardLogic[X, Y] == 0 && boardReveal[X,Y] == ' ')
+                    else if (boardLogic[X, Y] == 0 && boardReveal[X, Y] == ' ')
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                         Console.Write("[" + boardLogic[X, Y] + "]");
@@ -519,7 +521,7 @@ namespace MineSweeper
                 Console.WriteLine("\n");
                 Console.WriteLine("> Enter");
                 ConsoleKey key = Console.ReadKey(true).Key;
-                if(key == ConsoleKey.LeftArrow)
+                if (key == ConsoleKey.LeftArrow)
                 {
                     menuOption--;
                 }
@@ -540,9 +542,85 @@ namespace MineSweeper
                 if (key == ConsoleKey.Enter)
                 {
                     break;
-                }            
+                }
             }
             return name;
+        }
+        static void leaderboard()
+        {
+            if (!File.Exists("leaderboardTimes.txt"))
+            {
+                File.CreateText("leaderboardTimes.txt");// Create a file to write to.
+            }
+            if (!File.Exists("leaderboardNames.txt"))
+            {
+                File.CreateText("leaderboardNames.txt");// Create a file to write to.
+            }
+            string[] times = System.IO.File.ReadAllLines(@"leaderboardTimes.txt");
+            string[] names = System.IO.File.ReadAllLines(@"leaderboardNames.txt");
+            for(int i=0; i!= times.Length; i++)
+            {
+                Console.WriteLine(names[i]+": "+times[i]);
+            }
+            Console.WriteLine("> Exit");
+            Console.ReadKey(true);
+        }
+        static void leaderboardAdd(string Time, int[] name)
+        {
+            char[] text = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' }; //Array of letters
+
+            string timePath = "leaderboardTime.txt";
+            string namePath = "leaderboardName.txt";
+            string[] times = {"", "", "", "", "", "" };
+            string[] fileTimes;
+            string[] names = { "", "", "", "", "", "" };
+            string[] fileNames;
+            if (!File.Exists(timePath))
+            {
+                File.CreateText(timePath).Close();// Create a file to write to.  
+            }
+            using (var timeFile = File.OpenText(timePath))
+            {
+                //File.Create(timePath).Close();
+                fileTimes = File.ReadAllLines(timePath);
+                for(int a=0; a!=fileTimes.Length; a++)
+                {
+                    times[a] = fileTimes[a];
+                }
+                times[5] = Time;
+                    
+            }
+
+            if (!File.Exists(namePath))
+            {
+                File.CreateText(namePath).Close();
+            }
+            using (var nameFile = File.OpenText(namePath))
+            {
+                
+                fileNames = File.ReadAllLines(namePath);
+                for (int a = 0; a != fileTimes.Length; a++)
+                {
+                    names[a] = fileNames[a];
+                }
+                names[5] = text[name[0]].ToString() + text[name[1]].ToString() + text[name[2]].ToString();
+            }
+
+            Array.Sort(times, names);
+            string[] savedTimes = new string[6];
+            for(int A=0; A!=5; A++)
+            {
+                savedTimes[A] = times[A];
+            }
+
+            string[] savedNames = new string[6];
+            for (int A = 0; A != 5; A++)
+            {
+                savedNames[A] = names[A];
+            }
+
+            File.WriteAllLinesAsync(timePath, savedTimes, Encoding.UTF8);
+            File.WriteAllLinesAsync(namePath, savedNames, Encoding.UTF8);
         }
         static void prePostGame(int[] name)
         {
@@ -554,18 +632,14 @@ namespace MineSweeper
             Console.Clear();
             int win = game(difficulty);//starts the game at the correct difficulty
             sw.Stop();
+            Console.Clear();
             if (win == 1)
             {
-                
                 TimeSpan ts = sw.Elapsed; // Set the elapsed time as a TimeSpan value.
-                Console.Clear();
-                // Format and display the TimeSpan value.
-                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
-                    ts.Hours, ts.Minutes, ts.Seconds,
-                    ts.Milliseconds / 10);
+                
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",ts.Hours, ts.Minutes, ts.Seconds,ts.Milliseconds / 10);// Format and display the TimeSpan value.
                 Console.WriteLine("Time : " + elapsedTime);
-                Console.ReadKey(true);
-                //leaderboard(elapsedTime, chooseName(name));
+                leaderboardAdd(elapsedTime, chooseName(name));
             }
         }
         static void mainMenu()
@@ -581,10 +655,12 @@ namespace MineSweeper
                     case 1:
                         instructions(); //Goes to the instructions page
                         break;
-                    case 2: 
-                        name = chooseName(name);
+                    case 2:
+                        leaderboard();
                         break;
-                    case 3: break;
+                    case 3:
+                        name = chooseName(name);//Temp for testing choosing name
+                        break; //Todo: options
                     case 4:
                         Environment.Exit(0); //Exits the application
                         break;
@@ -598,3 +674,4 @@ namespace MineSweeper
         }
         }
     }
+
