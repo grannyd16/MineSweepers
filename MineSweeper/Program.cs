@@ -474,12 +474,77 @@ namespace MineSweeper
             Console.ReadKey(true);
             return (1);
         }
-        static int[] chooseName()
+        static int[] chooseName(int[] name)
         {
-            int[] name = {0,0,0};
+            char[] text = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' }; //Array of letters
+            int menuOption = 0;
+            while (true)
+            {
+                Console.Clear();
+                Console.WriteLine("Please choose your name with the arrow keys and click enter to confirm");
+                menuOption = cursorFlow(menuOption, 3);
+                Console.WriteLine();
+                Console.Write("   ");
+                for (int I = 0; I != 3; I++)
+                {
+                    if (menuOption == I)
+                    {
+                        Console.Write("V");
+                    }
+                    else
+                    {
+                        Console.Write(" ");
+                    }
+                }
+
+                Console.Write("\n");
+                Console.Write("   ");
+                for (int I = 0; I != 3; I++)
+                {
+                    Console.Write(text[name[I]]);
+                }
+                Console.Write("\n");
+                Console.Write("   ");
+                for (int I = 0; I != 3; I++)
+                {
+                    if (menuOption == I)
+                    {
+                        Console.Write("^");
+                    }
+                    else
+                    {
+                        Console.Write(" ");
+                    }
+                }
+                Console.WriteLine("\n");
+                Console.WriteLine("> Enter");
+                ConsoleKey key = Console.ReadKey(true).Key;
+                if(key == ConsoleKey.LeftArrow)
+                {
+                    menuOption--;
+                }
+                if (key == ConsoleKey.RightArrow)
+                {
+                    menuOption++;
+                }
+                if (key == ConsoleKey.UpArrow)
+                {
+                    name[menuOption]++;
+                    name[menuOption] = cursorFlow(name[menuOption], text.Length);
+                }
+                if (key == ConsoleKey.DownArrow)
+                {
+                    name[menuOption]--;
+                    name[menuOption] = cursorFlow(name[menuOption], text.Length);
+                }
+                if (key == ConsoleKey.Enter)
+                {
+                    break;
+                }            
+            }
             return name;
         }
-        static void prePostGame()
+        static void prePostGame(int[] name)
         {
             Stopwatch sw = new Stopwatch(); // Initialise the stopwatch
             int difficulty = menu("difficulty");// Gets the intended difficulty
@@ -491,8 +556,8 @@ namespace MineSweeper
             sw.Stop();
             if (win == 1)
             {
-                // Get the elapsed time as a TimeSpan value.
-                TimeSpan ts = sw.Elapsed;
+                
+                TimeSpan ts = sw.Elapsed; // Set the elapsed time as a TimeSpan value.
                 Console.Clear();
                 // Format and display the TimeSpan value.
                 string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
@@ -500,22 +565,25 @@ namespace MineSweeper
                     ts.Milliseconds / 10);
                 Console.WriteLine("Time : " + elapsedTime);
                 Console.ReadKey(true);
-                leaderboard(elapsedTime, chooseName());
+                //leaderboard(elapsedTime, chooseName(name));
             }
         }
         static void mainMenu()
         {
+            int[] name = { 0, 0, 0 };
             while (true)
             {
                 switch (menu("main")) //Create the main menu
                 {
                     case 0:
-                        prePostGame();
+                        prePostGame(name);
                         break;
                     case 1:
                         instructions(); //Goes to the instructions page
                         break;
-                    case 2: break;
+                    case 2: 
+                        name = chooseName(name);
+                        break;
                     case 3: break;
                     case 4:
                         Environment.Exit(0); //Exits the application
