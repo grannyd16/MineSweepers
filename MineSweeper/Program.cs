@@ -297,21 +297,21 @@ namespace MineSweeper
             }
             return boardReveal;
         }
-        static void game(int difficulty)
+        static int game(int difficulty)
         {
             char[] text = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' }; //Array of letters
             int size = 0, mines = 0; //Init
             switch (difficulty)
             {
-                case 0:
+                case 0: //Easy
                     size = 8;
                     mines = 15;
                     break;
-                case 1:
+                case 1: //Medium
                     size = 14;
                     mines = 40;
                     break;
-                case 2:
+                case 2: //Hard
                     size = 25;
                     mines = 99;
                     break;
@@ -472,19 +472,39 @@ namespace MineSweeper
             }
             Console.WriteLine("Press any key to continue");
             Console.ReadKey(true);
+            return (1);
+        }
+        static int[] chooseName()
+        {
+            int[] name = {0,0,0};
+            return name;
         }
         static void prePostGame()
         {
+            Stopwatch sw = new Stopwatch(); // Initialise the stopwatch
             int difficulty = menu("difficulty");// Gets the intended difficulty
-                                                //Console.WriteLine("Press any key to begin");//Waits for user input
-                                                //Console.ReadKey(true);
+            Console.WriteLine("Press any key to begin");//Waits for user input
+            Console.ReadKey(true);
+            sw.Start();
             Console.Clear();
-            game(difficulty);//starts the game at the correct difficulty
-
+            int win = game(difficulty);//starts the game at the correct difficulty
+            sw.Stop();
+            if (win == 1)
+            {
+                // Get the elapsed time as a TimeSpan value.
+                TimeSpan ts = sw.Elapsed;
+                Console.Clear();
+                // Format and display the TimeSpan value.
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
+                    ts.Hours, ts.Minutes, ts.Seconds,
+                    ts.Milliseconds / 10);
+                Console.WriteLine("Time : " + elapsedTime);
+                Console.ReadKey(true);
+                leaderboard(elapsedTime, chooseName());
+            }
         }
         static void mainMenu()
         {
-            Stopwatch sw = new Stopwatch(); // Initialise the stopwatch
             while (true)
             {
                 switch (menu("main")) //Create the main menu
