@@ -74,7 +74,8 @@ namespace MineSweeper
                         Console.WriteLine("What difficulty do you want to play?");
                         Console.WriteLine("Easy:   8x8,    15 mines");
                         Console.WriteLine("Medium: 14x14,  40 mines");
-                        Console.WriteLine("Hard:   25x25,  99 mines\n");
+                        Console.WriteLine("Hard:   25x25,  99 mines");
+                        Console.WriteLine("(Please note, the leaderboard times are only available in the easy difficulty)\n");
                         menuChoice = cursorFlow(menuChoice, difficulty.Length);
                         for (int X = 0; X != difficulty.Length; X++) //Loop through the main menu options and print cursor with it if iterator is equal to menu option
                         {
@@ -126,6 +127,7 @@ namespace MineSweeper
         }
         static void printBoard(int size, char[,] boardReveal, int[,] boardLogic, char[] text)
         {
+            ConsoleColor orig = Console.ForegroundColor;
             Console.Write("    "); //Padding
             for (int A = 0; A != size; A++) //Fills in lette row dynamicly with size
             {
@@ -168,12 +170,19 @@ namespace MineSweeper
                     }
                     else
                     {
-                        Console.ForegroundColor = ConsoleColor.Yellow;
+                        if (orig == ConsoleColor.Black)
+                        {
+                            Console.ForegroundColor = ConsoleColor.Yellow;
+                        }
+                        else
+                        {
+                            Console.ForegroundColor = ConsoleColor.DarkYellow;
+                        }
                         Console.Write("[" + boardLogic[X, Y] + "]");
                     }
 
 
-                    Console.ForegroundColor = ConsoleColor.White;
+                    Console.ForegroundColor = orig;
                 }
                 Console.Write("\n");
             }
@@ -323,6 +332,7 @@ namespace MineSweeper
             int win = 4;
             string inputBuilder;
             char[] splitInput;
+            bool inputError = false;
             for (int X = 0; X != size; X++)//Sets / resets the boards to default values
             {
                 for (int I = 0; I != size; I++)
@@ -332,58 +342,94 @@ namespace MineSweeper
                 }
             }
 
-            for (int A = 1; A != (size * size) - mines; A++)
+            for (int A = 1; A != (size * size) - mines; A++) //Loops for number of turns 
             {
                 Console.Clear();
+                if (inputError == true) //error output
+                {
+                    Console.WriteLine("That input is not correct");
+                }
+
                 int Y = 0, X = 0;// init
-                Console.WriteLine("Turn: " + A);
+                Console.WriteLine("Turn: " + A); //turn number
                 printBoard(size, boardReveal, boardLogic, text);//prints the board
-                win = winCheck(size, mines, boardLogic, boardReveal);
+                win = winCheck(size, mines, boardLogic, boardReveal); //Checks if you have won or lost
                 if (win == 0)
                 {
+
                     Console.WriteLine("That position was a mine, that means you lose");
-                    break;
+                    Console.ReadKey(true);
+                    return 0;
                 }
                 if (win == 1)
                 {
                     Console.WriteLine("Congratulations, all the spaces you falgged are mines, YOU WIN");
-                    break;
+                    Console.ReadKey(true);
+                    return 0;
                 }
                 if (win == 2)
                 {
                     Console.WriteLine("Congratulations, all the spaces that are not revealed are mines, YOU WIN");
-                    break;
+                    Console.ReadKey(true);
+                    return 0;
                 }
                 bool error;
-
-                Console.CursorVisible = true;
+                Console.CursorVisible = true; //Makes the cmd cursor visable
                 error = true;
                 inputBuilder = "";
-                Console.WriteLine("What position do you want to reveal (E.G. A1)");
+                Console.WriteLine(" What position do you want to reveal (E.G. A1).\n Type flag before the position to flag the position instead (e.g. Flag A1)");
                 try
                 {
-                    string input = Console.ReadLine();
-                    splitInput = input.ToCharArray();
-                    splitInput[0] = splitInput[0];
-                }
-                catch (Exception)
-                {
-                    A--;
-                    continue;
-                }
-                if (splitInput.Length >= 7)
-                {
-                    string flagCheck = splitInput[0].ToString() + splitInput[1].ToString() + splitInput[2].ToString() + splitInput[3].ToString();
-                    if (flagCheck.ToUpper() == "FLAG")
+                    string input = Console.ReadLine(); //Waits for the user to input
+                    splitInput = input.ToCharArray(); //splits it into a array of chars
+
+                    if (splitInput.Length >= 7) //If the input is 7 characters or longer
                     {
-                        for (int a = 6; a != splitInput.Length; a++)
+                        string flagCheck = splitInput[0].ToString() + splitInput[1].ToString() + splitInput[2].ToString() + splitInput[3].ToString();//Checks first 4 characters
+                        if (flagCheck.ToUpper() == "FLAG") //Changes them to upper case then sees if it is FLAG
                         {
-                            inputBuilder = inputBuilder + splitInput[a].ToString();
+                            inputBuilder = inputBuilder + splitInput[6].ToString(); //Checks the sixth character (number)
+                            if (splitInput.Length == 8)
+                            {
+                                inputBuilder = inputBuilder + splitInput[7].ToString(); //Checks the sixth character (number)
+                            }
+                            Y = Int32.Parse(inputBuilder) - 1; //saves it -1 to account for arrays starting at 0
+                            for (int a = 0; a != text.Length; a++) //Checks through each letter
+                            {
+                                if (text[a] == splitInput[5]) //If it is what was input
+                                {
+                                    X = (a % 26); //calculate the proper X position
+                                    error = false;
+                                    break;
+                                }
+                            }
+                            if (boardReveal[Y, X] == '#')//If it isnt flagged, flag it
+                            {
+                                boardReveal[Y, X] = 'F';
+                            }
+                            else if (boardReveal[Y, X] == 'F')//If it is flagged, unflag it
+                            {
+                                boardReveal[Y, X] = '#';
+                            }
+                        }
+                        else
+                        {
+                            A--;
+                            continue;
+                        }
+                    }
+                    else if (splitInput.Length <= 3)//If the input is less than or equal to 3
+                    {
+                        error = true;
+                        inputBuilder = splitInput[1].ToString(); //Sets the second chartacter
+                        if (splitInput.Length == 3)
+                        {
+                            inputBuilder = inputBuilder + splitInput[2].ToString(); //Checks the third character (number)
                         }
                         Y = Int32.Parse(inputBuilder) - 1;
                         for (int a = 0; a != text.Length; a++)
                         {
-                            if (text[a] == splitInput[5])
+                            if (text[a] == splitInput[0])
                             {
                                 X = (a % 26);
                                 error = false;
@@ -392,75 +438,49 @@ namespace MineSweeper
                         }
                         if (error == true)
                         {
-                            Console.WriteLine("Test");
                             A--;
                             continue;
                         }
                         if (boardReveal[Y, X] == '#')
                         {
-                            boardReveal[Y, X] = 'F';
+                            boardReveal[Y, X] = ' ';
                         }
-                        else if (boardReveal[Y, X] == 'F')
+                        if (boardReveal[Y, X] == 'F')
                         {
-                            boardReveal[Y, X] = '#';
+                            while (true)
+                            {
+                                Console.WriteLine("Do you want to remove the flag (F) or reveal the space(U) (input nothing to go back)?");
+                                string removeFlagIn = Console.ReadLine();
+                                if (removeFlagIn == "U")
+                                {
+                                    boardReveal[Y, X] = ' ';
+                                    break;
+                                }
+                                if (removeFlagIn == "F")
+                                {
+                                    boardReveal[Y, X] = '#';
+                                    break;
+                                }
+                                if (removeFlagIn == "")
+                                {
+                                    A--;
+                                    break;
+                                }
+                                else
+                                {
+                                    Console.WriteLine("That is not a valid input");
+                                }
+                            }
                         }
                     }
-                }
-                else if (splitInput.Length <= 3)
-                {
-                    error = true;
-                    for (int a = 1; a != splitInput.Length; a++)
+                    else
                     {
-                        inputBuilder = inputBuilder + splitInput[a].ToString();
-                    }
-                    Y = Int32.Parse(inputBuilder) - 1;
-                    for (int a = 0; a != text.Length; a++)
-                    {
-                        if (text[a] == splitInput[0])
-                        {
-                            X = (a % 26);
-                            error = false;
-                            break;
-                        }
-                    }
-                    if (error == true)
-                    {
+                        Console.WriteLine("That input is incorrect");
                         A--;
                         continue;
                     }
-                    if (boardReveal[Y, X] == '#')
-                    {
-                        boardReveal[Y, X] = ' ';
-                    }
-                    if (boardReveal[Y, X] == 'F')
-                    {
-                        while (true)
-                        {
-                            Console.WriteLine("Do you want to remove the flag (F) or reveal the space(U) (input nothing to go back)?");
-                            string removeFlagIn = Console.ReadLine();
-                            if (removeFlagIn == "U")
-                            {
-                                boardReveal[Y, X] = ' ';
-                                break;
-                            }
-                            if (removeFlagIn == "F")
-                            {
-                                boardReveal[Y, X] = '#';
-                                break;
-                            }
-                            if (removeFlagIn == "")
-                            {
-                                A--;
-                                break;
-                            }
-                            else
-                            {
-                                Console.WriteLine("That is not a valid input");
-                            }
-                        }
-                    }
                 }
-                else
+                catch (Exception)
                 {
                     A--;
                     continue;
@@ -546,36 +566,15 @@ namespace MineSweeper
             }
             return name;
         }
-        static void leaderboard()
-        {
-            string timePath = "leaderboardTime.txt";
-            string namePath = "leaderboardName.txt";
-            if (!File.Exists(timePath))
-            {
-                File.CreateText(timePath).Close();// Create a file to write to.
-            }
-            if (!File.Exists(namePath))
-            {
-                File.CreateText(namePath).Close();// Create a file to write to.
-            }
-            string[] times = System.IO.File.ReadAllLines(timePath);
-            string[] names = System.IO.File.ReadAllLines(namePath);
-            for(int i=0; i!= 5; i++)
-            {
-                Console.WriteLine(names[i]+": "+times[i]);
-            }
-            Console.WriteLine("> Exit");
-            Console.ReadKey(true);
-        }
         static void leaderboardAdd(string Time, int[] name)
         {
             char[] text = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z' }; //Array of letters
 
-            string timePath = "leaderboardTime.txt";
-            string namePath = "leaderboardName.txt";
-            string[] times = {"ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ" };
+            string timePath = "GameFiles/leaderboardTime.txt";
+            string namePath = "GameFiles/leaderboardName.txt";
+            string[] times = { "99:99:99.99", "99:99:99.99", "99:99:99.99", "99:99:99.99", "99:99:99.99", "99:99:99.99" };
             string[] fileTimes;
-            string[] names = { "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ", "ZZZZ" };
+            string[] names = { "ZZZ", "ZZZ", "ZZZ", "ZZZ", "ZZZ", "ZZZ" };
             string[] fileNames;
             if (!File.Exists(timePath))
             {
@@ -583,14 +582,13 @@ namespace MineSweeper
             }
             using (var timeFile = File.OpenText(timePath))
             {
-                //File.Create(timePath).Close();
                 fileTimes = File.ReadAllLines(timePath);
-                for(int a=0; a!=fileTimes.Length; a++)
+                for (int a = 0; a != fileTimes.Length; a++)
                 {
                     times[a] = fileTimes[a];
                 }
                 times[5] = Time;
-                    
+
             }
 
             if (!File.Exists(namePath))
@@ -599,7 +597,7 @@ namespace MineSweeper
             }
             using (var nameFile = File.OpenText(namePath))
             {
-                
+
                 fileNames = File.ReadAllLines(namePath);
                 for (int a = 0; a != fileTimes.Length; a++)
                 {
@@ -610,7 +608,7 @@ namespace MineSweeper
 
             Array.Sort(times, names);
             string[] savedTimes = new string[6];
-            for(int A=0; A!=5; A++)
+            for (int A = 0; A != 5; A++)
             {
                 savedTimes[A] = times[A];
             }
@@ -624,6 +622,40 @@ namespace MineSweeper
             File.WriteAllLines(timePath, savedTimes, Encoding.UTF8);
             File.WriteAllLines(namePath, savedNames, Encoding.UTF8);
         }
+        static void leaderboard()
+        {
+            Console.WriteLine("   Leaderboard");
+            Console.WriteLine("   Name|Time");
+            string timePath = "GameFiles/leaderboardTime.txt";
+            string namePath = "GameFiles/leaderboardName.txt";
+            int[] a = { 25, 25, 25 };
+            leaderboardAdd("99:99:99.99", a);
+            leaderboardAdd("99:99:99.99", a);
+            leaderboardAdd("99:99:99.99", a);
+            leaderboardAdd("99:99:99.99", a);
+            leaderboardAdd("99:99:99.99", a);
+            if (!File.Exists(timePath))
+            {
+                File.CreateText(timePath).Close();// Create a file to write to.
+            }
+            if (!File.Exists(namePath))
+            {
+                File.CreateText(namePath).Close();// Create a file to write to.
+            }
+            string[] times = System.IO.File.ReadAllLines(timePath);
+            string[] names = System.IO.File.ReadAllLines(namePath);
+            for (int i = 0; i != times.Length - 1; i++)
+            {
+                if (times[i] == "ZZZZ")
+                {
+                    Console.WriteLine("");
+                    continue;
+                }
+                Console.WriteLine("   " + names[i] + ": " + times[i]);
+            }
+            Console.WriteLine("> Exit");
+            Console.ReadKey(true);
+        }
         static void prePostGame(int[] name)
         {
             Stopwatch sw = new Stopwatch(); // Initialise the stopwatch
@@ -635,20 +667,116 @@ namespace MineSweeper
             int win = game(difficulty);//starts the game at the correct difficulty
             sw.Stop();
             Console.Clear();
-            if (win == 1)
+            if (win == 1 && difficulty == 0)
             {
                 TimeSpan ts = sw.Elapsed; // Set the elapsed time as a TimeSpan value.
-                
-                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",ts.Hours, ts.Minutes, ts.Seconds,ts.Milliseconds / 10);// Format and display the TimeSpan value.
+
+                string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);// Format and display the TimeSpan value.
                 Console.WriteLine("Time : " + elapsedTime);
                 leaderboardAdd(elapsedTime, chooseName(name));
             }
         }
-        static void mainMenu()
+        static void option(int[] name, int defaultTime, int backgroundColour)
         {
-            int[] name = { 0, 0, 0 };
+            string[] option = { "Record minesweeper game times by default", "Default leaderboard name", "background colour", "Save and exit", "Exit" };
+            string[] yesNo = { "Yes", "No" };
+            string[] stringColour = { "Black", "Dark Blue", "Dark Cyan", "Dark Red", "Dark Magenta", "Dark yellow", "Dark Gray", "Cyan", "Magenta", "Yellow", "White" };
+            int menuOption = 0;
             while (true)
             {
+                Console.Clear();
+                Console.WriteLine("Options (PLease press enter to change / select an option): \n");
+
+                for (int i = 0; i != option.Length; i++)
+                {
+                    menuOption = cursorFlow(menuOption, option.Length);
+                    selector(i, menuOption);
+                    Console.Write(" " + option[i]);
+                    switch (i)
+                    {
+                        case 0:
+                            Console.Write("[" + yesNo[defaultTime] + "]");
+                            break;
+                        case 2:
+                            Console.Write("[" + stringColour[backgroundColour] + "]");
+                            break;
+                    }
+                    Console.WriteLine("");
+                }
+
+                ConsoleKey key = Console.ReadKey(true).Key;
+                if (key == ConsoleKey.DownArrow)
+                {
+                    menuOption++;
+                }
+                if (key == ConsoleKey.UpArrow)
+                {
+                    menuOption--;
+                }
+                if (key == ConsoleKey.Enter)
+                {
+                    switch (menuOption)
+                    {
+                        case 0:
+                            defaultTime++;
+                            if (defaultTime == yesNo.Length)
+                            {
+                                defaultTime = 0;
+                            }
+                            break;
+                        case 1:
+                            name = chooseName(name);
+                            break;
+                        case 2:
+                            backgroundColour++;
+                            if (backgroundColour == stringColour.Length)
+                            {
+                                backgroundColour = 0;
+                            }
+                            break;
+                        case 3:
+                            string optionPath = "GameFiles/options.txt";
+                            string[] optionSave = { defaultTime.ToString(), name[0].ToString(), name[1].ToString(), name[2].ToString(), backgroundColour.ToString() };
+                            if (!File.Exists(optionPath))
+                            {
+                                File.CreateText(optionPath);// Create a file to write to.  
+                                
+                            }
+                            File.WriteAllLines(optionPath, optionSave, Encoding.UTF8);
+                            return;
+                        case 4:
+                            return;
+                            //break;
+
+                    }
+                }
+            }
+        }
+        static void mainMenu()
+        {
+            string[] fileoptions;
+            string optionPath = "GameFiles/options.txt";
+            Console.Clear();
+           
+
+            while (true)
+            {
+                using (var optionFile = File.OpenText(optionPath))
+                {
+                    fileoptions = File.ReadAllLines(optionPath);
+                } 
+                int[] name = {Convert.ToInt32(fileoptions[1]), Convert.ToInt32(fileoptions[2]), Convert.ToInt32(fileoptions[3]) };
+                ConsoleColor[] Colour = { ConsoleColor.Black, ConsoleColor.DarkBlue,  ConsoleColor.DarkCyan, ConsoleColor.DarkRed, ConsoleColor.DarkMagenta, ConsoleColor.DarkYellow,  ConsoleColor.DarkGray, ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.Yellow, ConsoleColor.White };
+                Console.BackgroundColor = Colour[Convert.ToInt32(fileoptions[4])];
+                if(Convert.ToInt32(fileoptions[4]) <= 12 && Convert.ToInt32(fileoptions[4]) >= 9)
+                {
+                    Console.ForegroundColor = ConsoleColor.Black;
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.White;
+                }
+                
                 switch (menu("main")) //Create the main menu
                 {
                     case 0:
@@ -661,8 +789,8 @@ namespace MineSweeper
                         leaderboard();
                         break;
                     case 3:
-                        name = chooseName(name);//Temp for testing choosing name
-                        break; //Todo: options
+                        option(name, Convert.ToInt32(fileoptions[0]), Convert.ToInt32(fileoptions[4]));
+                        break;
                     case 4:
                         Environment.Exit(0); //Exits the application
                         break;
@@ -671,9 +799,18 @@ namespace MineSweeper
         }
         static void Main(string[] args)
         {
+            DirectoryInfo di = Directory.CreateDirectory("GameFiles");
+            string optionPath = "GameFiles/options.txt";
+            if (!File.Exists(optionPath))
+            {
+                File.CreateText(optionPath).Close();// Create a file to write to.  
+                string[] defaultOption = { "0", "0", "0", "0", "0" };
+                File.WriteAllLines(optionPath, defaultOption, Encoding.UTF8);
+
+            }
+
             mainMenu();
+        }
 
-        }
-        }
     }
-
+}
