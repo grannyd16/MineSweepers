@@ -316,7 +316,7 @@ namespace MineSweeper
             {
                 case 0: //Easy
                     size = 8;
-                    mines = 15;
+                    mines = 1;
                     break;
                 case 1: //Medium
                     size = 14;
@@ -656,7 +656,7 @@ namespace MineSweeper
             Console.WriteLine("> Exit");
             Console.ReadKey(true);
         }
-        static void prePostGame(int[] name)
+        static void prePostGame(int[] name, int autoTimer)
         {
             Stopwatch sw = new Stopwatch(); // Initialise the stopwatch
             int difficulty = menu("difficulty");// Gets the intended difficulty
@@ -667,31 +667,35 @@ namespace MineSweeper
             int win = game(difficulty);//starts the game at the correct difficulty
             sw.Stop();
             Console.Clear();
-            if (win == 1 && difficulty == 0)
+            if ((win == 1 && difficulty == 0)|| autoTimer == 1)
             {
                 TimeSpan ts = sw.Elapsed; // Set the elapsed time as a TimeSpan value.
 
                 string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}", ts.Hours, ts.Minutes, ts.Seconds, ts.Milliseconds / 10);// Format and display the TimeSpan value.
                 Console.WriteLine("Time : " + elapsedTime);
+                Console.WriteLine("Press any key to continue");
+                Console.ReadKey(true);
                 leaderboardAdd(elapsedTime, chooseName(name));
             }
         }
         static void option(int[] name, int defaultTime, int backgroundColour)
         {
             string[] option = { "Record minesweeper game times by default", "Default leaderboard name", "background colour", "Save and exit", "Exit" };
-            string[] yesNo = { "Yes", "No" };
+            string[] yesNo = { "No", "Yes" };
             string[] stringColour = { "Black", "Dark Blue", "Dark Cyan", "Dark Red", "Dark Magenta", "Dark yellow", "Dark Gray", "Cyan", "Magenta", "Yellow", "White" };
             int menuOption = 0;
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("Options (PLease press enter to change / select an option): \n");
+                Console.WriteLine("Options (Please use up and down to navigate the options, one options with the option shown use left and right arrows to change them. \n For options without option shown, click enter on it to proceed): \n");
 
                 for (int i = 0; i != option.Length; i++)
                 {
                     menuOption = cursorFlow(menuOption, option.Length);
                     selector(i, menuOption);
                     Console.Write(" " + option[i]);
+                    defaultTime = cursorFlow(defaultTime, yesNo.Length);
+                    backgroundColour = cursorFlow(backgroundColour, stringColour.Length);
                     switch (i)
                     {
                         case 0:
@@ -713,7 +717,7 @@ namespace MineSweeper
                 {
                     menuOption--;
                 }
-                if (key == ConsoleKey.Enter)
+                if (key == ConsoleKey.RightArrow)
                 {
                     switch (menuOption)
                     {
@@ -724,9 +728,6 @@ namespace MineSweeper
                                 defaultTime = 0;
                             }
                             break;
-                        case 1:
-                            name = chooseName(name);
-                            break;
                         case 2:
                             backgroundColour++;
                             if (backgroundColour == stringColour.Length)
@@ -734,20 +735,43 @@ namespace MineSweeper
                                 backgroundColour = 0;
                             }
                             break;
+                     
+
+                    }
+                }
+                if (key == ConsoleKey.LeftArrow)
+                {
+                    switch (menuOption)
+                    {
+                        case 0:
+                            defaultTime--;
+                            break;
+
+                        case 2:
+                            backgroundColour--;
+                            break;
+
+                    }
+                }
+                if (key == ConsoleKey.Enter)
+                {
+                    switch (menuOption)
+                    {
+                        case 1:
+                            name = chooseName(name);
+                            break;
                         case 3:
                             string optionPath = "GameFiles/options.txt";
                             string[] optionSave = { defaultTime.ToString(), name[0].ToString(), name[1].ToString(), name[2].ToString(), backgroundColour.ToString() };
                             if (!File.Exists(optionPath))
                             {
                                 File.CreateText(optionPath);// Create a file to write to.  
-                                
                             }
                             File.WriteAllLines(optionPath, optionSave, Encoding.UTF8);
                             return;
                         case 4:
                             return;
                             //break;
-
                     }
                 }
             }
@@ -780,7 +804,7 @@ namespace MineSweeper
                 switch (menu("main")) //Create the main menu
                 {
                     case 0:
-                        prePostGame(name);
+                        prePostGame(name, Convert.ToInt32(fileoptions[0]));
                         break;
                     case 1:
                         instructions(); //Goes to the instructions page
