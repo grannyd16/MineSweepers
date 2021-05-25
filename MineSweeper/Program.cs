@@ -316,7 +316,7 @@ namespace MineSweeper
             {
                 case 0: //Easy
                     size = 8;
-                    mines = 1;
+                    mines = 15;
                     break;
                 case 1: //Medium
                     size = 14;
@@ -682,12 +682,12 @@ namespace MineSweeper
         {
             string[] option = { "Record minesweeper game times by default", "Default leaderboard name", "background colour", "Save and exit", "Exit" };
             string[] yesNo = { "No", "Yes" };
-            string[] stringColour = { "Black", "Dark Blue", "Dark Cyan", "Dark Red", "Dark Magenta", "Dark yellow", "Dark Gray", "Cyan", "Magenta", "Yellow", "White" };
+            string[] stringColour = { "Black", "Dark Blue", "Dark Cyan", "Dark Red", "Dark Magenta", "Dark yellow", "Dark Gray", "Cyan", "Magenta", "White" };
             int menuOption = 0;
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine("Options (Please use up and down to navigate the options, one options with the option shown use left and right arrows to change them. \n For options without option shown, click enter on it to proceed): \n");
+                Console.WriteLine(" Options: (Please use up and down to navigate the options, one options with the option shown use left and right arrows to change them. \n For options without option shown, click enter on it to proceed) \n Some background colours may result in difficulty seing board in some scenarios, please be careful using dark blue and dark yellow");
 
                 for (int i = 0; i != option.Length; i++)
                 {
@@ -790,7 +790,7 @@ namespace MineSweeper
                     fileoptions = File.ReadAllLines(optionPath);
                 } 
                 int[] name = {Convert.ToInt32(fileoptions[1]), Convert.ToInt32(fileoptions[2]), Convert.ToInt32(fileoptions[3]) };
-                ConsoleColor[] Colour = { ConsoleColor.Black, ConsoleColor.DarkBlue,  ConsoleColor.DarkCyan, ConsoleColor.DarkRed, ConsoleColor.DarkMagenta, ConsoleColor.DarkYellow,  ConsoleColor.DarkGray, ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.Yellow, ConsoleColor.White };
+                ConsoleColor[] Colour = { ConsoleColor.Black, ConsoleColor.DarkBlue,  ConsoleColor.DarkCyan, ConsoleColor.DarkRed, ConsoleColor.DarkMagenta, ConsoleColor.DarkYellow,  ConsoleColor.DarkGray, ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.White };
                 Console.BackgroundColor = Colour[Convert.ToInt32(fileoptions[4])];
                 if(Convert.ToInt32(fileoptions[4]) <= 12 && Convert.ToInt32(fileoptions[4]) >= 9)
                 {
