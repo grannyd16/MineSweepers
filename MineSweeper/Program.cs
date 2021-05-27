@@ -2,8 +2,8 @@
 //Started on 06/05/2021
 
 using System;
-using System.IO;
 using System.Diagnostics;
+using System.IO;
 using System.Text;
 namespace MineSweeper
 {
@@ -39,8 +39,9 @@ namespace MineSweeper
         {
             Console.CursorVisible = false;
             string[] mainMenu = { "Start game", "How to play", "Leaderboard", "Options", "Exit" }; //Main menu options
-            string[] exit = { "Exit" };
-            string[] difficulty = { "Easy", "Medium", "Hard" };
+            string[] exit = { "Exit" };//Used for exit only options
+            string[] difficulty = { "Easy", "Medium", "Hard", "Exit" };//Used to choose difficulty
+            string[] yesNo = {"Yes","No"};
             int menuChoice = 0; //Int to track cursor position
             ConsoleKey input;
 
@@ -81,6 +82,14 @@ namespace MineSweeper
                         {
                             selector(menuChoice, X);
                             Console.WriteLine(difficulty[X]);
+                        }
+                        break;
+                    case "Yesno":
+                        Console.WriteLine("Are you sure?");
+                        for (int X = 0; X != yesNo.Length; X++) //Loop through the main menu options and print cursor with it if iterator is equal to menu option
+                        {
+                            selector(menuChoice, X);
+                            Console.WriteLine(yesNo[X]);
                         }
                         break;
                 }
@@ -150,39 +159,32 @@ namespace MineSweeper
                             Console.Write(" ");
                         }
                     }
-                    if (boardReveal[X, Y] == 'F')
+                    if (boardReveal[X, Y] == 'F') //If its a flag set the text colour to blue
                     {
                         Console.ForegroundColor = ConsoleColor.Blue;
                     }
-                    if (boardReveal[X, Y] == '#' || boardReveal[X, Y] == 'F')
+                    if (boardReveal[X, Y] == '#' || boardReveal[X, Y] == 'F')//If it is unrevealed or a flag
                     {
                         Console.Write("[" + boardReveal[X, Y] + "]"); //Prints the X,Y contents of boardReveal
                     }
-                    else if (boardLogic[X, Y] == 9)
+                    else if (boardLogic[X, Y] == 9) //If it is a mine
                     {
-                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.ForegroundColor = ConsoleColor.Red;//Set text colour to red
                         Console.Write("[*]");
                     }
-                    else if (boardLogic[X, Y] == 0 && boardReveal[X, Y] == ' ')
+                    else if (boardLogic[X, Y] == 0 && boardReveal[X, Y] == ' ') //If it is revealed and  is a 0
                     {
-                        Console.ForegroundColor = ConsoleColor.Green;
+                        Console.ForegroundColor = ConsoleColor.Green; //Set colour to green
                         Console.Write("[" + boardLogic[X, Y] + "]");
                     }
-                    else
+                    else //Otherwise it is any other number and makes the text yellow
                     {
-                        if (orig == ConsoleColor.Black)
-                        {
-                            Console.ForegroundColor = ConsoleColor.Yellow;
-                        }
-                        else
-                        {
-                            Console.ForegroundColor = ConsoleColor.DarkYellow;
-                        }
+                        Console.ForegroundColor = ConsoleColor.Yellow;
                         Console.Write("[" + boardLogic[X, Y] + "]");
                     }
 
 
-                    Console.ForegroundColor = orig;
+                    Console.ForegroundColor = orig; //Resets the origional colour
                 }
                 Console.Write("\n");
             }
@@ -316,7 +318,7 @@ namespace MineSweeper
             {
                 case 0: //Easy
                     size = 8;
-                    mines = 15;
+                    mines = 1;
                     break;
                 case 1: //Medium
                     size = 14;
@@ -345,37 +347,38 @@ namespace MineSweeper
             for (int A = 1; A != (size * size) - mines; A++) //Loops for number of turns 
             {
                 Console.Clear();
+
+                int Y = 0, X = 0;// init
+                Console.WriteLine("Turn: " + A); //turn number
                 if (inputError == true) //error output
                 {
                     Console.WriteLine("That input is not correct");
                 }
 
-                int Y = 0, X = 0;// init
-                Console.WriteLine("Turn: " + A); //turn number
                 printBoard(size, boardReveal, boardLogic, text);//prints the board
                 win = winCheck(size, mines, boardLogic, boardReveal); //Checks if you have won or lost
                 if (win == 0)
                 {
 
-                    Console.WriteLine("That position was a mine, that means you lose");
+                    Console.WriteLine("That position was a mine, that means you lose \n Press any key to continue");
                     Console.ReadKey(true);
                     return 0;
                 }
                 if (win == 1)
                 {
-                    Console.WriteLine("Congratulations, all the spaces you falgged are mines, YOU WIN");
+                    Console.WriteLine("Congratulations, all the spaces you flagged are mines, YOU WIN  \n Press any key to continue");
                     Console.ReadKey(true);
-                    return 0;
+                    return 1;
                 }
                 if (win == 2)
                 {
-                    Console.WriteLine("Congratulations, all the spaces that are not revealed are mines, YOU WIN");
+                    Console.WriteLine("Congratulations, all the spaces that are not revealed are mines, YOU WIN  \n Press any key to continue");
                     Console.ReadKey(true);
-                    return 0;
+                    return 2;
                 }
                 bool error;
                 Console.CursorVisible = true; //Makes the cmd cursor visable
-                error = true;
+                error = false;
                 inputBuilder = "";
                 Console.WriteLine(" What position do you want to reveal (E.G. A1).\n Type flag before the position to flag the position instead (e.g. Flag A1)");
                 try
@@ -393,13 +396,18 @@ namespace MineSweeper
                             {
                                 inputBuilder = inputBuilder + splitInput[7].ToString(); //Checks the sixth character (number)
                             }
+                            else if(splitInput.Length > 8)
+                            {
+                                error = true;
+                                A--;
+                                continue;
+                            }
                             Y = Int32.Parse(inputBuilder) - 1; //saves it -1 to account for arrays starting at 0
                             for (int a = 0; a != text.Length; a++) //Checks through each letter
                             {
                                 if (text[a] == splitInput[5]) //If it is what was input
                                 {
                                     X = (a % 26); //calculate the proper X position
-                                    error = false;
                                     break;
                                 }
                             }
@@ -414,6 +422,7 @@ namespace MineSweeper
                         }
                         else
                         {
+                            error = true;
                             A--;
                             continue;
                         }
@@ -445,7 +454,7 @@ namespace MineSweeper
                         {
                             boardReveal[Y, X] = ' ';
                         }
-                        if (boardReveal[Y, X] == 'F')
+                        else if (boardReveal[Y, X] == 'F')
                         {
                             while (true)
                             {
@@ -463,6 +472,7 @@ namespace MineSweeper
                                 }
                                 if (removeFlagIn == "")
                                 {
+                                    error = true;
                                     A--;
                                     break;
                                 }
@@ -471,6 +481,12 @@ namespace MineSweeper
                                     Console.WriteLine("That is not a valid input");
                                 }
                             }
+                        }
+                        else
+                        {
+                            error = true;
+                            A--;
+                            continue;
                         }
                     }
                     else
@@ -660,14 +676,18 @@ namespace MineSweeper
         {
             Stopwatch sw = new Stopwatch(); // Initialise the stopwatch
             int difficulty = menu("difficulty");// Gets the intended difficulty
-            Console.WriteLine("Press any key to begin");//Waits for user input
+            if (difficulty == 3)
+            {
+                return;
+            }
+            Console.WriteLine("Press any button for the game and timer to start");//Waits for user input
             Console.ReadKey(true);
             sw.Start();
             Console.Clear();
             int win = game(difficulty);//starts the game at the correct difficulty
             sw.Stop();
             Console.Clear();
-            if ((win == 1 && difficulty == 0)|| autoTimer == 1)
+            if ((win == 1||win==2) && difficulty == 0 && autoTimer == 1)
             {
                 TimeSpan ts = sw.Elapsed; // Set the elapsed time as a TimeSpan value.
 
@@ -680,14 +700,14 @@ namespace MineSweeper
         }
         static void option(int[] name, int defaultTime, int backgroundColour)
         {
-            string[] option = { "Record minesweeper game times by default", "Default leaderboard name", "background colour", "Save and exit", "Exit" };
+            string[] option = { "Record minesweeper game times by default", "Change default leaderboard name", "Background colour","Reset settings to default", "Save and exit", "Exit" };
             string[] yesNo = { "No", "Yes" };
             string[] stringColour = { "Black", "Dark Blue", "Dark Cyan", "Dark Red", "Dark Magenta", "Dark yellow", "Dark Gray", "Cyan", "Magenta", "White" };
             int menuOption = 0;
             while (true)
             {
                 Console.Clear();
-                Console.WriteLine(" Options: (Please use up and down to navigate the options, one options with the option shown use left and right arrows to change them. \n For options without option shown, click enter on it to proceed) \n Some background colours may result in difficulty seing board in some scenarios, please be careful using dark blue and dark yellow");
+                Console.WriteLine(" Options: \n Please use up and down to navigate the options \n On options with the option shown use left and right arrows to change them. \n For options without option shown, click enter on it to proceed \n Some background colours may result in difficulty seing board in some scenarios \n please be careful using dark blue and dark yellow\n\n");
 
                 for (int i = 0; i != option.Length; i++)
                 {
@@ -735,7 +755,7 @@ namespace MineSweeper
                                 backgroundColour = 0;
                             }
                             break;
-                     
+
 
                     }
                 }
@@ -761,6 +781,17 @@ namespace MineSweeper
                             name = chooseName(name);
                             break;
                         case 3:
+                            Console.Clear();
+                            switch (menu("Yesno"))
+                            {
+                                case 0:
+                                    defaultOptions(1);
+                                    break;
+                                case 1:
+                                    continue;
+                            }
+                            break;
+                        case 4:
                             string optionPath = "GameFiles/options.txt";
                             string[] optionSave = { defaultTime.ToString(), name[0].ToString(), name[1].ToString(), name[2].ToString(), backgroundColour.ToString() };
                             if (!File.Exists(optionPath))
@@ -769,7 +800,7 @@ namespace MineSweeper
                             }
                             File.WriteAllLines(optionPath, optionSave, Encoding.UTF8);
                             return;
-                        case 4:
+                        case 5:
                             return;
                             //break;
                     }
@@ -781,18 +812,18 @@ namespace MineSweeper
             string[] fileoptions;
             string optionPath = "GameFiles/options.txt";
             Console.Clear();
-           
+
 
             while (true)
             {
                 using (var optionFile = File.OpenText(optionPath))
                 {
                     fileoptions = File.ReadAllLines(optionPath);
-                } 
-                int[] name = {Convert.ToInt32(fileoptions[1]), Convert.ToInt32(fileoptions[2]), Convert.ToInt32(fileoptions[3]) };
-                ConsoleColor[] Colour = { ConsoleColor.Black, ConsoleColor.DarkBlue,  ConsoleColor.DarkCyan, ConsoleColor.DarkRed, ConsoleColor.DarkMagenta, ConsoleColor.DarkYellow,  ConsoleColor.DarkGray, ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.White };
+                }
+                int[] name = { Convert.ToInt32(fileoptions[1]), Convert.ToInt32(fileoptions[2]), Convert.ToInt32(fileoptions[3]) };
+                ConsoleColor[] Colour = { ConsoleColor.Black, ConsoleColor.DarkBlue, ConsoleColor.DarkCyan, ConsoleColor.DarkRed, ConsoleColor.DarkMagenta, ConsoleColor.DarkYellow, ConsoleColor.DarkGray, ConsoleColor.Cyan, ConsoleColor.Magenta, ConsoleColor.White };
                 Console.BackgroundColor = Colour[Convert.ToInt32(fileoptions[4])];
-                if(Convert.ToInt32(fileoptions[4]) <= 12 && Convert.ToInt32(fileoptions[4]) >= 9)
+                if (Convert.ToInt32(fileoptions[4]) <= 12 && Convert.ToInt32(fileoptions[4]) >= 9)
                 {
                     Console.ForegroundColor = ConsoleColor.Black;
                 }
@@ -800,7 +831,7 @@ namespace MineSweeper
                 {
                     Console.ForegroundColor = ConsoleColor.White;
                 }
-                
+
                 switch (menu("main")) //Create the main menu
                 {
                     case 0:
@@ -821,18 +852,28 @@ namespace MineSweeper
                 }
             }
         }
+        static void defaultOptions(int type = 0)
+        {
+            string[] defaultOption = { "0", "0", "0", "0", "0" };
+            string optionPath = "GameFiles/options.txt";
+            if (type == 0)
+            {
+                if (!File.Exists(optionPath))
+                {
+                    File.CreateText(optionPath).Close();// Create a file to write to.  
+                    File.WriteAllLines(optionPath, defaultOption, Encoding.UTF8);
+                }
+            }
+            if(type == 1)
+            {
+                File.WriteAllLines(optionPath, defaultOption, Encoding.UTF8);
+            }
+
+        }
         static void Main(string[] args)
         {
             DirectoryInfo di = Directory.CreateDirectory("GameFiles");
-            string optionPath = "GameFiles/options.txt";
-            if (!File.Exists(optionPath))
-            {
-                File.CreateText(optionPath).Close();// Create a file to write to.  
-                string[] defaultOption = { "0", "0", "0", "0", "0" };
-                File.WriteAllLines(optionPath, defaultOption, Encoding.UTF8);
-
-            }
-
+            defaultOptions(0);
             mainMenu();
         }
 
